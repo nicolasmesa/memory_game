@@ -1,0 +1,16 @@
+{
+  "name": "Memory Game",
+  "short_name": "Memory",
+  "description": "A customizable memory card matching game",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f0f0f0",
+  "theme_color": "#4CAF50",
+  "icons": [
+    {
+      "src": "icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+} 
