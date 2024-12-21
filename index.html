@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Memory Game</title>
+    <style>
+        :root {
+            /* Configurable constants */
+            --card-width: 150px;
+            --card-height: 200px;
+            --card-border-radius: 10px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            min-height: 100vh;
+            background: #f0f0f0;
+            padding: 20px;
+        }
+
+        .screen {
+            display: none;
+            max-width: 1200px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        .title {
+            font-size: 2.5em;
+            margin-bottom: 30px;
+            color: #333;
+        }
+
+        .btn {
+            padding: 15px 30px;
+            font-size: 1.2em;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .btn:hover {
+            background: #45a049;
+        }
+
+        /* Input styling */
+        input {
+            padding: 15px;
+            font-size: 1.2em;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            margin-right: 10px;
+            transition: border-color 0.3s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #4CAF50;
+        }
+
+        /* Start Screen */
+        #startScreen {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        /* Add to existing styles */
+        .upload-section {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .photo-upload, .card-back-upload {
+            margin-bottom: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .upload-title {
+            margin-bottom: 5px;
+            color: #333;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .photo-preview {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .preview-image {
+            width: 100px;
+            height: 100px;
+            object-fit: cover;
+            border-radius: 5px;
+            border: 2px solid #4CAF50;
+        }
+
+        .error-message {
+            color: #ff0000;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Start Screen -->
+    <div id="startScreen" class="screen active">
+        <h1 class="title">Memory Game</h1>
+        <button id="startButton" class="btn">Start Game</button>
+    </div>
+
+    <!-- Player Setup Screen -->
+    <div id="playerSetupScreen" class="screen">
+        <h2 class="title">Add Players</h2>
+        <div id="playerInputs">
+            <input type="text" id="playerName" placeholder="Enter player name">
+            <button id="addPlayer" class="btn">Add Player</button>
+        </div>
+        <div id="playerList"></div>
+        <button id="continueToPhotos" class="btn" style="display: none;">Continue to Photo Upload</button>
+    </div>
+
+    <!-- Photo Upload Screen -->
+    <div id="photoUploadScreen" class="screen">
+        <h2 class="title">Upload Photos</h2>
+        <div class="upload-section">
+            <div class="photo-upload">
+                <h3 class="upload-title">Game Photos (10-30)</h3>
+                <input type="file" id="photoInput" multiple accept="image/*" class="file-input">
+                <label for="photoInput" class="btn">Select Photos</label>
+            </div>
+            <div class="card-back-upload">
+                <h3 class="upload-title">Card Back (Optional)</h3>
+                <input type="file" id="cardBackInput" accept="image/*" class="file-input">
+                <label for="cardBackInput" class="btn">Select Card Back</label>
+            </div>
+            <div id="photoPreview" class="photo-preview"></div>
+            <button id="startGameBtn" class="btn" style="display: none;">Start Game</button>
+        </div>
+    </div>
+
+    <script>
+        // Configuration
+        const CONFIG = {
+            MIN_PLAYERS: 1,
+            MAX_PLAYERS: 10,
+            MIN_PHOTOS: 10,
+            MAX_PHOTOS: 30,
+            CARD_WIDTH: 150,  // px
+            CARD_HEIGHT: 200, // px
+            MAINTAIN_ASPECT_RATIO: true
+        };
+
+        // Game state
+        const gameState = {
+            players: [],
+            currentScreen: 'start',
+            photos: [],
+            cardBack: null
+        };
+
+        // Screen management
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(screen => {
+                screen.classList.remove('active');
+            });
+            document.getElementById(screenId).classList.add('active');
+            gameState.currentScreen = screenId;
+        }
+
+        // Event Listeners
+        document.getElementById('startButton').addEventListener('click', () => {
+            showScreen('playerSetupScreen');
+        });
+
+        // Function to handle adding a player
+        function addPlayer() {
+            const playerName = document.getElementById('playerName').value.trim();
+            if (!playerName) return;
+            
+            if (gameState.players.length >= CONFIG.MAX_PLAYERS) {
+                alert(`Maximum ${CONFIG.MAX_PLAYERS} players allowed!`);
+                return;
+            }
+
+            gameState.players.push({
+                name: playerName,
+                score: 0
+            });
+
+            updatePlayerList();
+            document.getElementById('playerName').value = '';
+
+            // Show continue button if minimum players reached
+            if (gameState.players.length >= CONFIG.MIN_PLAYERS) {
+                document.getElementById('continueToPhotos').style.display = 'block';
+            }
+        }
+
+        // Add player on button click
+        document.getElementById('addPlayer').addEventListener('click', addPlayer);
+
+        // Add player on Enter key
+        document.getElementById('playerName').addEventListener('keypress', (event) => {
+            if (event.key === 'Enter') {
+                addPlayer();
+            }
+        });
+
+        function updatePlayerList() {
+            const playerList = document.getElementById('playerList');
+            playerList.innerHTML = '<h3>Players:</h3>' + 
+                gameState.players.map(player => 
+                    `<div>${player.name}</div>`
+                ).join('');
+        }
+
+        document.getElementById('continueToPhotos').addEventListener('click', () => {
+            showScreen('photoUploadScreen');
+        });
+
+        // Photo upload handling
+        document.getElementById('photoInput').addEventListener('change', (e) => {
+            const files = Array.from(e.target.files);
+            
+            if (files.length < CONFIG.MIN_PHOTOS || files.length > CONFIG.MAX_PHOTOS) {
+                alert(`Please select between ${CONFIG.MIN_PHOTOS} and ${CONFIG.MAX_PHOTOS} photos.`);
+                e.target.value = '';
+                return;
+            }
+
+            gameState.photos = [];
+            const photoPreview = document.getElementById('photoPreview');
+            photoPreview.innerHTML = '';
+
+            const loadPromises = files.map(file => {
+                return new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        const img = new Image();
+                        img.onload = () => {
+                            gameState.photos.push({
+                                src: e.target.result,
+                                width: img.width,
+                                height: img.height
+                            });
+                            
+                            // Create preview
+                            const previewImg = document.createElement('img');
+                            previewImg.src = e.target.result;
+                            previewImg.classList.add('preview-image');
+                            photoPreview.appendChild(previewImg);
+                            resolve();
+                        };
+                        img.src = e.target.result;
+                    };
+                    reader.readAsDataURL(file);
+                });
+            });
+
+            Promise.all(loadPromises).then(() => {
+                document.getElementById('startGameBtn').style.display = 'block';
+            });
+        });
+
+        // Card back upload handling
+        document.getElementById('cardBackInput').addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const img = new Image();
+                img.onload = () => {
+                    gameState.cardBack = {
+                        src: e.target.result,
+                        width: img.width,
+                        height: img.height
+                    };
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        });
+
+        // Start game button
+        document.getElementById('startGameBtn').addEventListener('click', () => {
+            if (gameState.photos.length < CONFIG.MIN_PHOTOS) {
+                alert(`Please upload at least ${CONFIG.MIN_PHOTOS} photos.`);
+                return;
+            }
+            // We'll implement the game screen in the next step
+            initializeGame();
+        });
+
+        function initializeGame() {
+            // This will be implemented in the next step
+            console.log('Initializing game...');
+        }
+    </script>
+</body>
+</html>
