@@ -314,6 +314,11 @@
         #modalSecondaryBtn {
             background: #666;
         }
+
+        #continueToPhotos {
+            display: none;
+            margin: 20px auto;
+        }
     </style>
 </head>
 <body>
@@ -580,12 +585,17 @@
         function createCard(cardData, index) {
             const card = document.createElement('div');
             card.className = 'card';
+            
+            // Add custom card back if available
+            const cardBackStyle = gameState.cardBack ? 
+                `background-image: url('${gameState.cardBack.src}'); background-size: cover;` : '';
+            
             card.innerHTML = `
                 <div class="card-inner">
                     <div class="card-front">
                         <img src="${cardData.src}" alt="card">
                     </div>
-                    <div class="card-back"></div>
+                    <div class="card-back" style="${cardBackStyle}"></div>
                 </div>
             `;
             card.dataset.index = index;
