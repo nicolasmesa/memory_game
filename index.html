@@ -85,6 +85,9 @@
             max-width: 800px;
             margin: 0 auto;
             padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
 
         .photo-upload, .card-back-upload {
@@ -123,6 +126,193 @@
         .error-message {
             color: #ff0000;
             margin-top: 10px;
+        }
+
+        #startGameBtn {
+            margin-top: 20px;
+        }
+
+        /* Add to existing styles */
+        .game-info {
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .player-scores {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 15px;
+        }
+
+        .player-score {
+            padding: 10px 20px;
+            border-radius: 5px;
+            background: #f5f5f5;
+        }
+
+        .player-score.active {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .game-board {
+            position: relative;
+            height: auto;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+            gap: 20px;
+            padding: 20px;
+        }
+
+        .card {
+            position: relative;
+            width: var(--card-width);
+            height: var(--card-height);
+            perspective: 1000px;
+            cursor: pointer;
+            margin: 0 auto;
+            transition: transform 0.3s ease;
+        }
+
+        .card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transform-style: preserve-3d;
+            transition: transform 0.6s;
+        }
+
+        .card.flipped .card-inner {
+            transform: rotateY(180deg);
+        }
+
+        .card-front, .card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: var(--card-border-radius);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        .card-front {
+            background: #fff;
+            transform: rotateY(180deg);
+        }
+
+        .card-back {
+            background: #2196F3 url('data:image/svg+xml,<svg width="40" height="40" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg"><rect width="100%" height="100%" fill="%231976D2"/><path d="M0 20 L40 20 M20 0 L20 40" stroke="%232196F3" stroke-width="2"/></svg>') repeat;
+        }
+
+        .card img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            border-radius: var(--card-border-radius);
+        }
+
+        /* Add to existing styles */
+        .match-animation {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255, 255, 255, 0.95);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.2);
+            text-align: center;
+            z-index: 1000;
+        }
+
+        .matched-cards {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .matched-cards .card {
+            position: relative;
+            transform: none !important;
+        }
+
+        .match-text {
+            color: #4CAF50;
+            font-size: 1.5em;
+        }
+
+        .discovered-pairs {
+            margin-top: 20px;
+            padding: 15px;
+            background: white;
+            border-radius: 10px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .discovered-pair {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .discovered-pair img {
+            width: 50px;
+            height: 50px;
+            object-fit: contain;
+            border-radius: 5px;
+        }
+
+        /* Add to existing styles */
+        .card.matched {
+            visibility: hidden; /* Instead of display: none */
+            pointer-events: none; /* Prevent interaction with matched cards */
+        }
+
+        /* Add modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            max-width: 500px;
+            width: 90%;
+        }
+
+        .modal-buttons {
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        #modalSecondaryBtn {
+            background: #666;
         }
     </style>
 </head>
@@ -163,12 +353,42 @@
         </div>
     </div>
 
+    <!-- Game Screen -->
+    <div id="gameScreen" class="screen">
+        <div class="game-info">
+            <div id="playerScores" class="player-scores"></div>
+            <div id="currentPlayer" class="current-player"></div>
+            <button id="restartGame" class="btn">Restart Game</button>
+        </div>
+        <div id="gameBoard" class="game-board"></div>
+    </div>
+
+    <!-- Match Animation Screen -->
+    <div id="matchScreen" class="screen">
+        <div class="match-animation">
+            <h2 class="match-text"></h2>
+            <div class="matched-cards"></div>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div id="gameModal" class="modal">
+        <div class="modal-content">
+            <h2 id="modalTitle"></h2>
+            <p id="modalMessage"></p>
+            <div class="modal-buttons">
+                <button id="modalPrimaryBtn" class="btn"></button>
+                <button id="modalSecondaryBtn" class="btn" style="display: none;"></button>
+            </div>
+        </div>
+    </div>
+
     <script>
         // Configuration
         const CONFIG = {
             MIN_PLAYERS: 1,
             MAX_PLAYERS: 10,
-            MIN_PHOTOS: 10,
+            MIN_PHOTOS: 5,
             MAX_PHOTOS: 30,
             CARD_WIDTH: 150,  // px
             CARD_HEIGHT: 200, // px
@@ -180,7 +400,8 @@
             players: [],
             currentScreen: 'start',
             photos: [],
-            cardBack: null
+            cardBack: null,
+            discoveredPairs: []
         };
 
         // Screen management
@@ -318,8 +539,232 @@
         });
 
         function initializeGame() {
-            // This will be implemented in the next step
-            console.log('Initializing game...');
+            showScreen('gameScreen');
+            gameState.currentPlayerIndex = 0;
+            gameState.selectedCards = [];
+            gameState.matchedPairs = 0;
+            gameState.discoveredPairs = []; // Reset discovered pairs
+            gameState.players.forEach(player => player.score = 0);
+            
+            // Create pairs of cards
+            const cardPairs = [...gameState.photos, ...gameState.photos];
+            gameState.cards = shuffleArray(cardPairs);
+            
+            createGameBoard();
+            updateScoreDisplay();
+            updateCurrentPlayer();
+            updateDiscoveredPairs(); // Update the display to show empty discovered pairs
+        }
+
+        function shuffleArray(array) {
+            const newArray = [...array];
+            for (let i = newArray.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+            }
+            return newArray;
+        }
+
+        function createGameBoard() {
+            const gameBoard = document.getElementById('gameBoard');
+            gameBoard.innerHTML = '';
+
+            gameState.cards.forEach((card, index) => {
+                const cardElement = createCard(card, index);
+                const randomRotation = Math.random() * 20 - 10; // -10 to +10 degrees
+                cardElement.style.transform = `rotate(${randomRotation}deg)`;
+                gameBoard.appendChild(cardElement);
+            });
+        }
+
+        function createCard(cardData, index) {
+            const card = document.createElement('div');
+            card.className = 'card';
+            card.innerHTML = `
+                <div class="card-inner">
+                    <div class="card-front">
+                        <img src="${cardData.src}" alt="card">
+                    </div>
+                    <div class="card-back"></div>
+                </div>
+            `;
+            card.dataset.index = index;
+            
+            card.addEventListener('click', () => handleCardClick(card));
+            return card;
+        }
+
+        function handleCardClick(card) {
+            if (
+                card.classList.contains('flipped') || 
+                gameState.selectedCards.length >= 2 ||
+                gameState.selectedCards.includes(card)
+            ) return;
+
+            card.classList.add('flipped');
+            gameState.selectedCards.push(card);
+
+            if (gameState.selectedCards.length === 2) {
+                setTimeout(checkMatch, 1000);
+            }
+        }
+
+        function checkMatch() {
+            const [card1, card2] = gameState.selectedCards;
+            const index1 = parseInt(card1.dataset.index);
+            const index2 = parseInt(card2.dataset.index);
+            
+            if (gameState.cards[index1].src === gameState.cards[index2].src) {
+                // Match found
+                gameState.players[gameState.currentPlayerIndex].score++;
+                gameState.matchedPairs++;
+                updateScoreDisplay();
+                
+                showMatchAnimation([card1, card2]);
+                
+                if (gameState.matchedPairs === gameState.cards.length / 2) {
+                    setTimeout(announceWinner, 2500);
+                }
+            } else {
+                // No match
+                setTimeout(() => {
+                    card1.classList.remove('flipped');
+                    card2.classList.remove('flipped');
+                    nextPlayer();
+                }, 1000);
+            }
+            
+            gameState.selectedCards = [];
+        }
+
+        function nextPlayer() {
+            gameState.currentPlayerIndex = 
+                (gameState.currentPlayerIndex + 1) % gameState.players.length;
+            updateCurrentPlayer();
+        }
+
+        function updateScoreDisplay() {
+            const scoresDiv = document.getElementById('playerScores');
+            scoresDiv.innerHTML = gameState.players.map((player, index) => `
+                <div class="player-score ${index === gameState.currentPlayerIndex ? 'active' : ''}">
+                    ${player.name}: ${player.score}
+                </div>
+            `).join('');
+        }
+
+        function updateCurrentPlayer() {
+            const currentPlayer = gameState.players[gameState.currentPlayerIndex];
+            document.getElementById('currentPlayer').textContent = 
+                `Current Player: ${currentPlayer.name}`;
+            updateScoreDisplay();
+        }
+
+        function announceWinner() {
+            const winner = gameState.players.reduce((prev, current) => 
+                (prev.score > current.score) ? prev : current
+            );
+            
+            showModal(
+                'Game Over!',
+                `${winner.name} wins with ${winner.score} pairs!`,
+                'Play Again',
+                () => initializeGame()
+            );
+        }
+
+        // Add restart functionality
+        document.getElementById('restartGame').addEventListener('click', () => {
+            showModal(
+                'Restart Game',
+                'Are you sure you want to restart the game?',
+                'Yes',
+                () => initializeGame(),
+                'No',
+                () => {}
+            );
+        });
+
+        function showMatchAnimation(cards) {
+            const matchScreen = document.getElementById('matchScreen');
+            const matchText = matchScreen.querySelector('.match-text');
+            const matchedCards = matchScreen.querySelector('.matched-cards');
+            
+            const currentPlayer = gameState.players[gameState.currentPlayerIndex];
+            matchText.textContent = `${currentPlayer.name} found a match!`;
+            
+            matchedCards.innerHTML = '';
+            cards.forEach(card => {
+                const clone = card.cloneNode(true);
+                clone.style.position = 'relative';
+                clone.style.left = '0';
+                clone.style.top = '0';
+                matchedCards.appendChild(clone);
+            });
+
+            // Store the discovered pair
+            const cardIndices = cards.map(card => parseInt(card.dataset.index));
+            gameState.discoveredPairs.push({
+                player: currentPlayer.name,
+                cards: cardIndices.map(index => gameState.cards[index])
+            });
+
+            showScreen('matchScreen');
+            
+            setTimeout(() => {
+                showScreen('gameScreen');
+                // Instead of display: none, add matched class
+                cards.forEach(card => card.classList.add('matched'));
+                updateDiscoveredPairs();
+            }, 2000);
+        }
+
+        function updateDiscoveredPairs() {
+            // Create or update discovered pairs display
+            let discoveredSection = document.querySelector('.discovered-pairs');
+            if (!discoveredSection) {
+                discoveredSection = document.createElement('div');
+                discoveredSection.className = 'discovered-pairs';
+                document.querySelector('.game-info').appendChild(discoveredSection);
+            }
+
+            discoveredSection.innerHTML = gameState.discoveredPairs.map(pair => `
+                <div class="discovered-pair">
+                    <img src="${pair.cards[0].src}" alt="card">
+                    <span>${pair.player}</span>
+                </div>
+            `).join('');
+        }
+
+        // Add modal functionality
+        function showModal(title, message, primaryBtn, primaryAction, secondaryBtn = null, secondaryAction = null) {
+            const modal = document.getElementById('gameModal');
+            document.getElementById('modalTitle').textContent = title;
+            document.getElementById('modalMessage').textContent = message;
+            
+            const primaryBtnElement = document.getElementById('modalPrimaryBtn');
+            primaryBtnElement.textContent = primaryBtn;
+            primaryBtnElement.onclick = () => {
+                hideModal();
+                if (primaryAction) primaryAction();
+            };
+
+            const secondaryBtnElement = document.getElementById('modalSecondaryBtn');
+            if (secondaryBtn && secondaryAction) {
+                secondaryBtnElement.style.display = 'block';
+                secondaryBtnElement.textContent = secondaryBtn;
+                secondaryBtnElement.onclick = () => {
+                    hideModal();
+                    secondaryAction();
+                };
+            } else {
+                secondaryBtnElement.style.display = 'none';
+            }
+
+            modal.classList.add('active');
+        }
+
+        function hideModal() {
+            document.getElementById('gameModal').classList.remove('active');
         }
     </script>
 </body>
