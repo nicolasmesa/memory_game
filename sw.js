@@ -1,4 +1,4 @@
-const CACHE_VERSION = '1.0.4';
+const CACHE_VERSION = '1.0.6';
 const CACHE_NAME = `memory-game-${CACHE_VERSION}`;
 const ASSETS = [
   '/',
