@@ -420,21 +420,25 @@
                         // Check for updates
                         registration.addEventListener('updatefound', () => {
                             const newWorker = registration.installing;
-                            newWorker.addEventListener('statechange', () => {
-                                if (newWorker.state === 'installed') {
-                                    showModal(
-                                        'Update Available',
-                                        'A new version of the game is available. Would you like to update now?',
-                                        'Update',
-                                        () => {
-                                            newWorker.postMessage({ type: 'SKIP_WAITING' });
-                                            window.location.reload();
-                                        },
-                                        'Later',
-                                        () => {}
-                                    );
-                                }
-                            });
+                            
+                            // Only show update modal if there's an existing service worker
+                            if (registration.active) {
+                                newWorker.addEventListener('statechange', () => {
+                                    if (newWorker.state === 'installed') {
+                                        showModal(
+                                            'Update Available',
+                                            'A new version of the game is available. Would you like to update now?',
+                                            'Update',
+                                            () => {
+                                                newWorker.postMessage({ type: 'SKIP_WAITING' });
+                                                window.location.reload();
+                                            },
+                                            'Later',
+                                            () => {}
+                                        );
+                                    }
+                                });
+                            }
                         });
                     })
                     .catch(err => {
