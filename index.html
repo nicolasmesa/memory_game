@@ -341,6 +341,16 @@
             display: none;
             margin: 20px auto;
         }
+
+        /* Add spacing between buttons */
+        #resetGame {
+            margin-left: 10px;
+            background: #f44336; /* Red color to indicate destructive action */
+        }
+        
+        #resetGame:hover {
+            background: #d32f2f;
+        }
     </style>
 </head>
 <body>
@@ -386,6 +396,7 @@
             <div id="playerScores" class="player-scores"></div>
             <div id="currentPlayer" class="current-player"></div>
             <button id="restartGame" class="btn">Restart Game</button>
+            <button id="resetGame" class="btn">Reset Everything</button>
         </div>
         <div id="gameBoard" class="game-board"></div>
     </div>
@@ -848,6 +859,18 @@
         function hideModal() {
             document.getElementById('gameModal').classList.remove('active');
         }
+
+        // Add reset functionality
+        document.getElementById('resetGame').addEventListener('click', () => {
+            showModal(
+                'Reset Game',
+                'Are you sure you want to reset everything? This will clear all players and photos.',
+                'Yes',
+                () => window.location.reload(),
+                'No',
+                () => {}
+            );
+        });
     </script>
 </body>
 </html>
