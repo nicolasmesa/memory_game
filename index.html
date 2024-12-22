@@ -11,6 +11,7 @@
     <link rel="shortcut icon" type="image/png" href="/icons/icon-192x192.png">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-title" content="Memory Game">
     <style>
         :root {
@@ -415,10 +416,44 @@
                 navigator.serviceWorker.register('/sw.js')
                     .then(registration => {
                         console.log('ServiceWorker registration successful');
+                        
+                        // Check for updates
+                        registration.addEventListener('updatefound', () => {
+                            const newWorker = registration.installing;
+                            newWorker.addEventListener('statechange', () => {
+                                if (newWorker.state === 'installed') {
+                                    showModal(
+                                        'Update Available',
+                                        'A new version of the game is available. Would you like to update now?',
+                                        'Update',
+                                        () => {
+                                            newWorker.postMessage({ type: 'SKIP_WAITING' });
+                                            window.location.reload();
+                                        },
+                                        'Later',
+                                        () => {}
+                                    );
+                                }
+                            });
+                        });
                     })
                     .catch(err => {
                         console.log('ServiceWorker registration failed: ', err);
                     });
+            });
+
+            // Listen for messages from the Service Worker
+            navigator.serviceWorker.addEventListener('message', (event) => {
+                if (event.data.type === 'UPDATE_AVAILABLE') {
+                    showModal(
+                        'Update Available',
+                        'A new version of the game is available. Would you like to update now?',
+                        'Update',
+                        () => window.location.reload(),
+                        'Later',
+                        () => {}
+                    );
+                }
             });
         }
 
