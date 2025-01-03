@@ -348,10 +348,8 @@
             margin: 20px auto;
         }
 
-        /* Add spacing between buttons */
         #resetGame {
-            margin-left: 10px;
-            background: #f44336; /* Red color to indicate destructive action */
+            background: #f44336;
         }
         
         #resetGame:hover {
@@ -375,7 +373,7 @@
         }
 
         .sidebar.visible {
-            display: block;
+            display: flex;
         }
 
         .sidebar.open {
@@ -441,6 +439,7 @@
             border-radius: 10px;
             max-height: calc(100vh - 200px);
             overflow-y: auto;
+            margin-bottom: 20px;
         }
 
         .discovered-pair {
@@ -455,6 +454,104 @@
         .discovered-pair:hover {
             transform: translateX(-5px);
         }
+
+        .sidebar-links {
+            margin: 20px 0;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            border-bottom: 1px solid #eee;
+        }
+
+        .sidebar-links h3 {
+            font-size: 1em;
+            margin-bottom: 10px;
+        }
+
+        .sidebar-link {
+            display: block;
+            color: #4CAF50;
+            text-decoration: none;
+            margin-bottom: 10px;
+            font-size: 0.9em;
+            line-height: 1.4;
+        }
+
+        .sidebar-link:hover {
+            text-decoration: underline;
+            color: #45a049;
+        }
+
+        .sidebar-links {
+            margin-top: auto;
+            padding: 20px 0;
+            border-top: 2px solid #eee;
+        }
+
+        .sidebar-links h3 {
+            font-size: 1.1em;
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .sidebar-link {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #4CAF50;
+            text-decoration: none;
+            margin-bottom: 12px;
+            font-size: 0.95em;
+            line-height: 1.4;
+            padding: 8px;
+            border-radius: 5px;
+            transition: background-color 0.2s, transform 0.2s;
+        }
+
+        .sidebar-link:hover {
+            background-color: #f5f5f5;
+            transform: translateX(5px);
+        }
+
+        .sidebar-link i {
+            font-size: 1.2em;
+        }
+
+        /* Update sidebar to use flex for full-height layout */
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            padding-bottom: 20px;
+        }
+
+        /* Start screen links styling */
+        .start-links {
+            margin-top: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .start-link {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #4CAF50;
+            text-decoration: none;
+            font-size: 1.1em;
+            padding: 10px 20px;
+            border-radius: 5px;
+            transition: background-color 0.2s, transform 0.2s;
+        }
+
+        .start-link:hover {
+            background-color: rgba(76, 175, 80, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .start-link i {
+            font-size: 1.2em;
+        }
     </style>
 </head>
 <body>
@@ -462,6 +559,18 @@
     <div id="startScreen" class="screen active">
         <h1 class="title">Memory Game</h1>
         <button id="startButton" class="btn">Start Game</button>
+        <div class="start-links">
+            <a href="https://blog.nicolasmesa.co/posts/2024/12/memory-game/" 
+               target="_blank" 
+               class="start-link">
+                <i>📝</i> Read how this game was built
+            </a>
+            <a href="https://github.com/nicolasmesa/memory_game" 
+               target="_blank" 
+               class="start-link">
+                <i>💻</i> View source code
+            </a>
+        </div>
     </div>
 
     <!-- Player Setup Screen -->
@@ -480,7 +589,7 @@
         <h2 class="title">Upload Photos</h2>
         <div class="upload-section">
             <div class="photo-upload">
-                <h3 class="upload-title">Game Photos (10-30)</h3>
+                <h3 class="upload-title">Game Photos (5 - 10)</h3>
                 <input type="file" id="photoInput" multiple accept="image/*" class="file-input">
                 <label for="photoInput" class="btn">Select Photos</label>
             </div>
@@ -529,7 +638,23 @@
         <h3>Game Controls</h3>
         <button id="restartGame" class="btn">Restart Game</button>
         <button id="resetGame" class="btn">Reset Everything</button>
+        
         <div class="discovered-pairs"></div>
+        
+        <!-- Move links section to bottom -->
+        <div class="sidebar-links">
+            <h3>About This Game</h3>
+            <a href="https://blog.nicolasmesa.co/posts/2024/12/memory-game/" 
+               target="_blank" 
+               class="sidebar-link">
+                <i>📝</i> Read how this game was built
+            </a>
+            <a href="https://github.com/nicolasmesa/memory_game" 
+               target="_blank" 
+               class="sidebar-link">
+                <i>💻</i> View source code
+            </a>
+        </div>
     </div>
 
     <script>
